@@ -1,0 +1,1101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вадим и Виктория — Свадьба</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Playfair+Display:ital@1&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #94AFCC;
+    --gold-light: #B3D4E0;
+    --gold-dark: #5B7FA8;
+    --cream: #F5F8FC;
+    --cream-dark: #EEF2F7;
+    --brown: #5B7FA8;
+    --brown-light: #5B7FA0;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Jost', sans-serif;
+    background: var(--cream);
+    color: var(--brown);
+    overflow-x: hidden;
+  }
+
+  #envelope-screen {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(ellipse at center, #E8F2F8 0%, #B0CEDB 60%, #A8D4E8 100%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.8s ease, transform 0.8s ease;
+  }
+
+  #envelope-screen.hide {
+    opacity: 0;
+    transform: scale(1.05);
+    pointer-events: none;
+  }
+
+  .env-hint {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1rem;
+    font-weight: 300;
+    letter-spacing: 0.15em;
+    color: var(--brown-light);
+    margin-bottom: 2.5rem;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.5s forwards;
+  }
+
+  .envelope-wrap {
+    cursor: pointer;
+    position: relative;
+    opacity: 0;
+    animation: fadeUp 1s ease 0.8s forwards;
+    transition: transform 0.3s ease;
+  }
+
+  .envelope-wrap:hover { transform: translateY(-6px); }
+
+  .envelope-svg {
+    width: 300px;
+    transition: filter 0.3s;
+    display: block;
+  }
+
+  .envelope-wrap.opening #env-flap {
+    animation: openFlap 0.7s cubic-bezier(.4,0,.2,1) forwards;
+    transform-origin: top center;
+  }
+  .envelope-wrap.opening #env-seal-group {
+    animation: sealPop 0.4s ease 0.25s forwards;
+  }
+
+  .env-names {
+    margin-top: 2.5rem;
+    text-align: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2rem;
+    font-weight: 300;
+    color: #5B7FA8;
+    letter-spacing: 0.05em;
+    opacity: 0;
+    animation: fadeUp 1s ease 1.1s forwards;
+  }
+
+  .env-names span { color: #5B7FA8; font-style: italic; }
+
+  .tap-hint {
+    margin-top: 1.2rem;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: #5B7FA8;
+    opacity: 0;
+    animation: pulse 2s ease 2s infinite, fadeUp 1s ease 1.4s forwards;
+  }
+
+  #main-site {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 1s ease, transform 1s ease;
+    pointer-events: none;
+  }
+
+  #main-site.show {
+    opacity: 1;
+    transform: translateY(0);
+    pointer-events: all;
+  }
+
+  .hero {
+    background: var(--white);
+    text-align: center;
+    padding: 4rem 2rem 3rem;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, transparent, var(--gold), transparent);
+  }
+
+  .hero-dear {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 2.4rem;
+    color: var(--brown);
+    margin-bottom: 1.5rem;
+    font-weight: 300;
+  }
+
+  .hero-text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: var(--brown-light);
+    max-width: 340px;
+    margin: 0 auto 1.5rem;
+  }
+
+  .hero-invite {
+    font-family: 'Cormorant Garamond', serif;
+    font-weight: 600;
+    font-size: 1.15rem;
+    color: var(--brown);
+    letter-spacing: 0.03em;
+  }
+
+  .hero-photo {
+    margin: 2.5rem auto 1rem;
+    max-width: 420px;
+    width: 92%;
+    border-radius: 4px;
+    overflow: hidden;
+    box-shadow: 0 8px 32px #5B7FA0;
+    position: relative;
+  }
+
+  .hero-photo-placeholder {
+    width: 100%;
+    aspect-ratio: 4/5;
+    background: linear-gradient(135deg, #B0CEDB, #B0CEDB, #94AFCC);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.8);
+    letter-spacing: 0.1em;
+  }
+
+  /* Timing */
+  .timing-section {
+    background: var(--gold);
+    padding: 3rem 2rem;
+    position: relative;
+    overflow: hidden;
+    clip-path: polygon(0 20px, 100% 0, 100% calc(100% - 20px), 0 100%);
+    margin: 0;
+  }
+
+  .timing-section::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+
+  .section-icon {
+    display: block;
+    width: 60px;
+    margin: 0 auto 1rem;
+    opacity: 0.9;
+  }
+
+  .section-title {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 2.5rem;
+    position: relative;
+  }
+
+  .timing-list {
+    max-width: 380px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .timing-item {
+    display: flex;
+    align-items: baseline;
+    gap: 1.5rem;
+    padding: 1rem 0;
+    border-bottom: 1px dotted rgba(255, 255, 255, 0.35);
+    color: var(--white);
+  }
+
+  .timing-item:last-child { border-bottom: none; }
+
+  .timing-time {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.6rem;
+    font-weight: 300;
+    min-width: 70px;
+    color: var(--white);
+  }
+
+  .timing-event {
+    font-size: 0.9rem;
+    letter-spacing: 0.05em;
+    opacity: 0.92;
+  }
+
+  /* Venue */
+  .venue-section {
+    background: var(--white);
+    padding: 3.5rem 2rem;
+    text-align: center;
+  }
+
+  .section-title-dark {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 1.4rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+
+  .venue-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 2.2rem;
+    color: var(--brown);
+    font-weight: 300;
+    margin: 0.8rem 0;
+  }
+
+  .venue-address {
+    font-size: 0.9rem;
+    color: var(--brown-light);
+    line-height: 1.7;
+    margin-bottom: 2rem;
+  }
+
+  .venue-photo {
+    width: 100%;
+    aspect-ratio: 16/9;
+    background: linear-gradient(135deg, #B0CEDB, #B0CEDB, #94AFCC);
+    border-radius: 4px;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 1rem;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .btn-gold {
+    display: inline-block;
+    padding: 0.9rem 2.5rem;
+    background: var(--brown);
+    color: var(--white);
+    font-family: 'Jost', sans-serif;
+    font-size: 0.75rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    text-decoration: none;
+    cursor: pointer;
+    transition: background 0.3s;
+    border: none;
+  }
+
+  .btn-gold:hover { background: var(--gold-dark); }
+
+  /* DRESS CODE — обновлённая секция */
+  .dress-section {
+    background: var(--cream);
+    padding: 3.5rem 1.5rem;
+    text-align: center;
+  }
+
+  .dress-text {
+    font-size: 0.9rem;
+    color: var(--brown-light);
+    line-height: 1.8;
+    max-width: 340px;
+    margin: 0 auto 2rem;
+  }
+
+  /* новая палитра */
+  .palette {
+    display: flex;
+    gap: 0.75rem;
+    justify-content: center;
+    margin: 1.5rem 0 2.2rem;
+    flex-wrap: wrap;
+  }
+
+  .palette-dot {
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+    transition: transform 0.2s;
+    flex-shrink: 0;
+  }
+
+  .palette-dot:hover { transform: scale(1.12); }
+
+  .dress-style-label {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.6rem;
+    color: var(--brown);
+    margin-bottom: 1.5rem;
+  }
+
+  /* сетка 2 колонки, со смещением для «кирпичной» кладки */
+  .dress-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+
+  .dress-card {
+    aspect-ratio: 2/3;
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  /* нечётные карточки (1,3) — без смещения */
+  .dress-card:nth-child(odd) {
+    margin-top: 0;
+  }
+
+  /* чётные карточки (2,4) — смещены вниз */
+  .dress-card:nth-child(even) {
+    margin-top: 1.5rem;
+  }
+
+  /* новые цвета из палитры */
+  .dress-card:nth-child(1) { background: linear-gradient(160deg, #ddb99f, #ddcab9); }
+  .dress-card:nth-child(2) { background: linear-gradient(160deg, #4f2e1d, #5e5337); }
+  .dress-card:nth-child(3) { background: linear-gradient(160deg, #b1a7a5, #ddcab9); }
+  .dress-card:nth-child(4) { background: linear-gradient(160deg, #5e5337, #4f2e1d); }
+
+  /* Адаптив для маленьких экранов */
+  @media (max-width: 480px) {
+    .dress-grid {
+      gap: 0.5rem;
+      max-width: 320px;
+    }
+    .dress-card:nth-child(even) {
+      margin-top: 0.75rem;
+    }
+    .palette-dot {
+      width: 36px;
+      height: 36px;
+    }
+  }
+
+  @media (max-width: 380px) {
+    .dress-grid {
+      gap: 0.4rem;
+      max-width: 260px;
+    }
+    .dress-card:nth-child(even) {
+      margin-top: 0.5rem;
+    }
+    .palette-dot {
+      width: 30px;
+      height: 30px;
+    }
+  }
+
+  /* Wishes */
+  .wishes-section {
+    background: var(--gold);
+    padding: 3.5rem 2rem;
+    clip-path: polygon(0 20px, 100% 0, 100% calc(100% - 20px), 0 100%);
+    margin: 0;
+  }
+
+  .wishes-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 2.2rem;
+    color: var(--white);
+    text-align: center;
+    margin-bottom: 2.5rem;
+    font-weight: 300;
+  }
+
+  .wish-item {
+    max-width: 380px;
+    margin: 0 auto 2rem;
+    text-align: center;
+    color: var(--white);
+  }
+
+  .wish-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    opacity: 0.7;
+    margin-bottom: 0.5rem;
+  }
+
+  .wish-text {
+    font-size: 0.9rem;
+    line-height: 1.75;
+    opacity: 0.95;
+  }
+
+  .wish-divider {
+    width: 40px;
+    height: 1px;
+    background: rgba(255, 255, 255, 0.4);
+    margin: 1.5rem auto;
+  }
+
+  .age-badge {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 2.5rem;
+    color: var(--white);
+    text-align: center;
+    opacity: 0.9;
+    margin-bottom: 0.5rem;
+  }
+
+  .age-text {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.9);
+    text-align: center;
+    line-height: 1.8;
+    max-width: 300px;
+    margin: 0 auto;
+  }
+
+  /* Contacts */
+  .contacts-section {
+    background: var(--white);
+    padding: 3.5rem 2rem;
+    text-align: center;
+  }
+
+  .contact-text {
+    font-size: 0.9rem;
+    color: var(--brown-light);
+    line-height: 1.8;
+    margin: 1.2rem 0;
+  }
+
+  .contact-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--brown);
+    margin: 1rem 0 1.5rem;
+  }
+
+  .contact-btns {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-bottom: 3rem;
+  }
+
+  .contact-btn {
+    width: 52px;
+    height: 52px;
+    background: var(--brown);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--white);
+    text-decoration: none;
+    transition: background 0.3s, transform 0.2s;
+    font-size: 1.2rem;
+  }
+
+  .contact-btn:hover { background: var(--gold); transform: scale(1.08); }
+
+  /* Footer / sign-off */
+  .signoff {
+    background: var(--cream);
+    padding: 3rem 2rem;
+    text-align: center;
+  }
+
+  .signoff-names {
+    font-family: 'Jost', sans-serif;
+    font-weight: 500;
+    font-size: 1.3rem;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--brown);
+    margin-bottom: 0.5rem;
+  }
+
+  .signoff-love {
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1rem;
+    color: var(--gold-dark);
+    margin-bottom: 2rem;
+  }
+
+  .chin-chin {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    font-family: 'Cormorant Garamond', serif;
+    font-style: italic;
+    font-size: 1.1rem;
+    color: var(--brown-light);
+  }
+
+  .chin-chin svg { width: 40px; fill: none; stroke: var(--gold); stroke-width: 1.5; }
+
+  .footer-copy {
+    margin-top: 3rem;
+    font-size: 0.7rem;
+    color: var(--brown-light);
+    opacity: 0.5;
+    letter-spacing: 0.1em;
+  }
+
+  /* Decorative ornament */
+  .ornament {
+    text-align: center;
+    color: var(--gold);
+    font-size: 1.2rem;
+    margin: 0.5rem 0 1.5rem;
+    letter-spacing: 0.3em;
+    opacity: 0.7;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+  }
+
+  @keyframes openFlap {
+    0%   { transform: rotateX(0deg); }
+    100% { transform: rotateX(180deg); }
+  }
+
+  @keyframes sealPop {
+    to { opacity: 0; transform: scale(0.5) translateY(-10px); }
+  }
+
+  /* Scroll reveal */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .reveal.visible { opacity: 1; transform: translateY(0); }
+
+  /* Music player hidden */
+  #bg-music {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 999;
+    opacity: 0.7;
+    transition: opacity 0.3s;
+    cursor: pointer;
+    background: rgba(255,255,255,0.9);
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    border: none;
+  }
+  #bg-music:hover { opacity: 1; }
+  #bg-music svg { width: 22px; height: 22px; fill: var(--brown); }
+</style>
+</head>
+<body>
+
+<div id="envelope-screen">
+  <p class="env-hint">Для вас — особое приглашение</p>
+  
+  <div class="envelope-wrap" id="envelope" onclick="openEnvelope()">
+    <svg class="envelope-svg" viewBox="0 0 300 210" xmlns="http://www.w3.org/2000/svg">
+      <!-- Shadow / base rect -->
+      <rect x="4" y="8" width="292" height="198" rx="8" fill="rgba(90,65,30,0.08)"/>
+
+      <!-- Envelope body -->
+      <rect x="0" y="10" width="300" height="195" rx="8" fill="#FFFFFF"/>
+
+      <!-- Left inner triangle -->
+      <polygon points="0,10 0,205 120,120" fill="#E8F2F8"/>
+      <!-- Right inner triangle -->
+      <polygon points="300,10 300,205 180,120" fill="#E0EDF5"/>
+      <!-- Bottom inner triangle -->
+      <polygon points="0,205 300,205 150,120" fill="#E0EDF5"/>
+
+      <!-- Subtle border -->
+      <rect x="0" y="10" width="300" height="195" rx="8" fill="none" stroke="#B0CEDB" stroke-width="1"/>
+
+      <!-- Flap (top triangle) — animated on open -->
+      <polygon id="env-flap" points="0,10 300,10 150,115" fill="#B0CEDB" style="transform-box: fill-box; transform-origin: top center;"/>
+      <!-- Flap border line -->
+      <line x1="0" y1="10" x2="150" y2="115" stroke="#A8C8E0" stroke-width="0.8" opacity="0.6"/>
+      <line x1="300" y1="10" x2="150" y2="115" stroke="#A8C8E0" stroke-width="0.8" opacity="0.6"/>
+
+      <!-- Wax seal -->
+      <g id="env-seal-group" style="transform-box: fill-box; transform-origin: center;">
+        <circle cx="150" cy="107" r="22" fill="#94AFCC" opacity="0.95"/>
+        <circle cx="150" cy="107" r="18" fill="none" stroke="#FFFFFF" stroke-width="1" opacity="0.5"/>
+        <!-- Heart shape -->
+        <path d="M150 116 C146 112, 138 107, 138 101 C138 96, 143 93, 150 100 C157 93, 162 96, 162 101 C162 107, 154 112, 150 116Z" fill="#FFFFFF" opacity="0.9"/>
+      </g>
+    </svg>
+  </div>
+
+  <p class="env-names"><span>Вадим</span> &amp; <span>Виктория</span></p>
+  <p class="tap-hint">нажмите, чтобы открыть</p>
+</div>
+
+<!-- MAIN SITE -->
+<div id="main-site">
+
+  <!-- Intro: Names + childhood photos + calendar -->
+  <section class="intro-section">
+    <h1 class="intro-names"><em>Вадим и Виктория</em></h1>
+
+    <p class="intro-quote" style="text-align: left;">— интересно, кто будет<br>моей женой?</p>
+
+    <div class="childhood-pair">
+      <div class="childhood-photo-frame">
+        <img src="img/вадим.jpg" alt="Вадим в детстве" style="width:100%;height:100%;object-fit:cover;">
+      </div>
+      <div class="childhood-photo-frame">
+        <img src="img/вика.jpg" alt="Виктория в детстве" style="width:100%;height:100%;object-fit:cover;">
+        <svg class="paperclip" viewBox="0 0 24 40" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 2 C16 2 19 5 19 9 L19 26 C19 31 15 35 10 35 C5 35 2 31 2 26 L2 12" stroke="#5B7FA8" stroke-width="2" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <p class="intro-answer" style="text-align: right;">— ей буду я!</p>
+
+    <div class="mini-calendar">
+      <p class="cal-month">Июль, 2026</p>
+      <div class="cal-grid">
+        <span class="cal-dow">ПН</span><span class="cal-dow">ВТ</span><span class="cal-dow">СР</span><span class="cal-dow">ЧТ</span><span class="cal-dow">ПТ</span><span class="cal-dow">СБ</span><span class="cal-dow">ВС</span>
+        <span class="cal-day">20</span><span class="cal-day">21</span><span class="cal-day">22</span><span class="cal-day">23</span><span class="cal-day">24</span><span class="cal-day">25</span><span class="cal-day">26</span>
+        <span class="cal-day">27</span><span class="cal-day">28</span><span class="cal-day cal-highlight">29</span><span class="cal-day">30</span><span class="cal-day">31</span><span class="cal-day cal-empty"></span><span class="cal-day cal-empty"></span>
+      </div>
+    </div>
+  </section>
+
+  <style>
+    .intro-section {
+      background: var(--white);
+      padding: 3.5rem 1.5rem 3rem;
+      text-align: center;
+    }
+
+    .intro-names {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 2.4rem;
+      font-weight: 600;
+      color: #5B7FA8;
+      letter-spacing: 0.05em;
+      margin-bottom: 2rem;
+    }
+
+    .intro-names span { 
+      color: #5B7FA8; 
+      font-style: italic; 
+    }
+
+    .intro-quote, .intro-answer {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 1.15rem;
+      color: var(--gold-dark);
+      line-height: 1.5;
+    }
+
+    .intro-quote { margin-bottom: 1.8rem; }
+    .intro-answer { margin-top: 1.2rem; margin-bottom: 2.5rem; }
+
+    .childhood-pair {
+      display: flex;
+      gap: 0.8rem;
+      justify-content: center;
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .childhood-photo-frame {
+      position: relative;
+      flex: 1;
+      aspect-ratio: 3/4;
+      border-radius: 4px;
+      overflow: hidden;
+      box-shadow: 0 6px 20px rgba(90,65,30,0.15);
+    }
+
+    .childhood-photo-placeholder {
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(150deg, #E0EDF5, #B0CEDB);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      color: rgba(255,255,255,0.85);
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .paperclip {
+      position: absolute;
+      top: -10px;
+      right: 12px;
+      width: 20px;
+      height: 36px;
+      transform: rotate(8deg);
+      opacity: 0.85;
+    }
+
+    .mini-calendar {
+      max-width: 420px;
+      margin: 0 auto;
+    }
+
+    .cal-month {
+      font-family: 'Jost', sans-serif;
+      font-weight: 600;
+      font-size: 1.3rem;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+      color: var(--brown);
+      margin-bottom: 1.2rem;
+    }
+
+    .cal-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      row-gap: 0.9rem;
+      align-items: center;
+      justify-items: center;
+    }
+
+    .cal-dow {
+      font-family: 'Jost', sans-serif;
+      font-weight: 500;
+      font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      color: var(--brown-light);
+    }
+
+    .cal-day {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      color: var(--brown);
+      width: 38px;
+      height: 38px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .cal-empty { visibility: hidden; }
+
+    .cal-highlight {
+      color: var(--white);
+      font-weight: 600;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 38 38'%3E%3Cpath d='M19 33 C19 33 5 21 5 11 C5 5.5 9.5 2 14 4.5 C16 5.5 17.7 7.3 19 9.5 C20.3 7.3 22 5.5 24 4.5 C28.5 2 33 5.5 33 11 C33 21 19 33 19 33Z' fill='%2394AFCC'/%3E%3C/svg%3E");
+      background-size: 38px 38px;
+      background-repeat: no-repeat;
+      background-position: center;
+    }
+  </style>
+
+  <!-- Hero -->
+  <section class="hero">
+    <h1 class="hero-dear">Дорогие и близкие</h1>
+    <p class="hero-text">Мы хотим разделить с вами один из самых важных и радостных дней в нашей жизни.</p>
+    <p class="hero-invite"><strong>Приглашаем вас стать частью нашей свадьбы!</strong></p>
+    <div class="hero-photo">
+      <div class="hero-photo-placeholder"><img src="img/викаивадим.jpg" alt="Вадим и Виктория" style="width:100%;height:100%;object-fit:cover;"></div>
+    </div>
+  </section>
+
+  <!-- Timing -->
+  <section class="timing-section reveal">
+    <svg class="section-icon" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="22" cy="28" r="12" stroke="white" stroke-width="1.5"/>
+      <circle cx="38" cy="28" r="12" stroke="white" stroke-width="1.5"/>
+    </svg>
+    <h2 class="section-title">Тайминг</h2>
+    <div class="timing-list">
+      <div class="timing-item">
+        <span class="timing-time">16:00</span>
+        <span class="timing-event">ЗАГС</span>
+      </div>
+      <div class="timing-item">
+        <span class="timing-time">17:00</span>
+        <span class="timing-event">Праздничный ужин</span>
+      </div>
+      <div class="timing-item">
+        <span class="timing-time">23:00</span>
+        <span class="timing-event">Финал вечера</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dress code -->
+  <section class="dress-section reveal">
+    <div style="max-width:900px;margin:0 auto;padding:50px 20px;background:#fff;border-radius:20px;text-align:center;">
+
+      <h2 style="
+        font-size:25px;
+        letter-spacing:6px;
+        color:#6f87a5;
+        margin:0;
+        font-family:'Cormorant Garamond',serif;">
+        DRESS-CODE
+      </h2>
+
+      <div style="font-size:22px;color:#9eb1c8;margin:15px 0;">
+        ✦ ✦ ✦
+      </div>
+
+      <p style="
+        font-size: 0.95rem;
+        line-height: 1.8;
+        color: var(--brown-light);
+        max-width: 340px;
+        margin: 0 auto 2rem;
+        font-style: italic;">
+        Нам будет приятно, если Вы поддержите<br>стиль торжества в своих нарядах
+      </p>
+
+      <div style="
+        display:grid;
+        grid-template-columns:2fr 1fr;
+        gap:20px;
+        align-items:start;">
+
+        <!-- Большой коллаж -->
+        <div>
+          <img src="img/дресс код.jpg"
+               alt=""
+               style="width:100%;border-radius:12px;display:block;">
+        </div>
+
+        <!-- Правая колонка -->
+        <div style="
+          display:flex;
+          flex-direction:column;
+          gap:20px;">
+
+          <img src="img/бежевое.jpg"
+               alt=""
+               style="width:100%;border-radius:12px;display:block;">
+
+        </div>
+
+      </div>
+
+      <div style="
+        display:grid;
+        grid-template-columns:1fr 1fr;
+        gap:20px;
+        margin-top:20px;
+        align-items:end;">
+
+        <img src="img/зеленое_платье.jpg"
+             alt=""
+             style="width:100%;border-radius:12px;display:block;">
+
+        <div>
+
+          <div style="
+            font-size:54px;
+            font-style:italic;
+            color:#7a90ad;
+            margin-bottom:20px;
+            font-family:'Cormorant Garamond',serif;">
+            Style
+          </div>
+
+          <img src="img/коричневый_муж.jpg"
+               alt=""
+               style="width:100%;border-radius:12px;display:block;">
+
+        </div>
+
+      </div>
+
+      <div style="margin-top:45px;">
+
+        <div style="
+          color:#8b96a6;
+          font-size:18px;
+          letter-spacing:2px;
+          margin-bottom:18px;">
+          ОСНОВНАЯ ПАЛИТРА
+        </div>
+
+        <div style="
+          display:flex;
+          justify-content:center;
+          gap:16px;">
+
+          <span style="width:34px;height:34px;border-radius:50%;background:#ddb99f;display:block;"></span>
+          <span style="width:34px;height:34px;border-radius:50%;background:#ddcab9;display:block;border:1px solid #ddd;"></span>
+          <span style="width:34px;height:34px;border-radius:50%;background:#4f2e1d;display:block;"></span>
+          <span style="width:34px;height:34px;border-radius:50%;background:#5e5337;display:block;"></span>
+          <span style="width:34px;height:34px;border-radius:50%;background:#b1a7a5;display:block;"></span>
+
+        </div>
+
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Wishes -->
+  <section class="wishes-section reveal">
+    <h2 class="wishes-title">Пожелания</h2>
+    
+    <div class="wish-item">
+      <p class="wish-num">—1—</p>
+      <p class="wish-text">Просим не дарить нам цветы. Вместо этого мы будем рады бутылке хорошего вина.</p>
+    </div>
+    
+    <div class="wish-divider"></div>
+    
+    <div class="wish-item">
+      <p class="wish-num">—2—</p>
+      <p class="wish-text">Мы не хотим обременять вас выбором и будем рады подарку в конверте.</p>
+    </div>
+
+  </section>
+
+  <!-- Contacts -->
+  <section class="contacts-section reveal">
+    <h2 class="section-title-dark">Контакты</h2>
+    <div class="ornament">✦ ✦ ✦</div>
+    <p class="contact-text">По всем вопросам в день мероприятия и до него вы можете обращаться к невесте:</p>
+    <p class="contact-name">Виктория&nbsp;&nbsp;+7 (964) 293-20-05</p>
+    <div class="contact-btns">
+      <a href="https://t.me/vika_lavika" class="contact-btn" title="Telegram">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M9.78 18.65l.28-4.23 7.68-6.92c.34-.31-.07-.46-.52-.19L7.74 13.3 3.64 12c-.88-.25-.89-.86.2-1.3l15.97-6.16c.73-.33 1.43.18 1.15 1.3l-2.72 12.81c-.19.91-.74 1.13-1.5.71L12.6 16.3l-1.99 1.93c-.23.23-.42.42-.83.42z"/></svg>
+      </a>
+      <a href="tel:+79642932005" class="contact-btn" title="Позвонить">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79a15.05 15.05 0 006.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1C10.38 21 3 13.62 3 4.5c0-.55.45-1 1-1H7.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.24 1.02l-2.21 2.2z"/></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- Sign-off -->
+  <section class="signoff reveal">
+    <p class="signoff-love">С любовью,</p>
+    <p class="signoff-names">Вадим и Виктория</p>
+    <br>
+    <div class="chin-chin">
+      <span style="font-size:1.3rem; margin: 0 0.5rem;"><img src="https://gas-kvas.com/uploads/posts/2023-01/1674649909_gas-kvas-com-p-konturnii-risunok-bokalov-4.jpg" alt="бокалы" style="height: 80px;"></span>
+    </div>
+    <p class="footer-copy">© golub.ru</p>
+  </section>
+
+</div>
+
+<!-- Music player -->
+<button id="bg-music" onclick="toggleMusic()" title="Вкл/Выкл музыку">
+  <svg viewBox="0 0 24 24"><path d="M3 10v4h4l5 5V5L7 10H3zm13.5 2c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/></svg>
+</button>
+
+<script>
+  let audio = null;
+  let isPlaying = false;
+
+  function openEnvelope() {
+    const wrap = document.getElementById('envelope');
+    wrap.classList.add('opening');
+
+    setTimeout(() => {
+      document.getElementById('envelope-screen').classList.add('hide');
+    }, 700);
+
+    setTimeout(() => {
+      document.getElementById('envelope-screen').style.display = 'none';
+      const main = document.getElementById('main-site');
+      main.style.pointerEvents = 'all';
+      main.classList.add('show');
+      initReveal();
+      playMusic();
+    }, 1500);
+  }
+
+  function initReveal() {
+    const els = document.querySelectorAll('.reveal');
+    const obs = new IntersectionObserver((entries) => {
+      entries.forEach(e => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    els.forEach(el => obs.observe(el));
+  }
+
+  function playMusic() {
+    try {
+      audio = new Audio('music/Jrg_Demus_Klod_Debyussi.mp3');
+      audio.loop = true;
+      audio.volume = 0.5;
+      audio.play().catch(e => console.log('Autoplay prevented, click anywhere to play'));
+      isPlaying = true;
+      document.addEventListener('click', function playOnClick() {
+        if (audio && !isPlaying) {
+          audio.play().catch(() => {});
+          isPlaying = true;
+        }
+        document.removeEventListener('click', playOnClick);
+      });
+    } catch(e) {
+      console.log('Audio not available');
+    }
+  }
+
+  function toggleMusic() {
+    if (!audio) return;
+    if (isPlaying) {
+      audio.pause();
+      isPlaying = false;
+    } else {
+      audio.play().catch(() => {});
+      isPlaying = true;
+    }
+  }
+</script>
+</body>
+</html>
